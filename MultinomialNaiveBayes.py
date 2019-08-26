@@ -57,7 +57,7 @@ def eval_predictions(y_test, y_pred):
     print('precision:', metrics.precision_score(y_test, y_pred, average='weighted'))
     print('recall:', metrics.recall_score(y_test, y_pred, average='weighted'))
     print('F-measure:', metrics.f1_score(y_test, y_pred, average='weighted'))
-    
+
 eval_predictions(y_test, y_pred)
 
 #%%
@@ -75,4 +75,22 @@ print()
 for x in X_test[y_test > y_pred][:2]:
     print(x[:500])
     print()
+#%%
+#A test with my review: 
+recensione = ["I was in a hurry to find some rechargeable batteries for the InnoTab because my kid would throw a fit every time they died.  I found this and it has the best of all worlds.  I do wish the batteries could be charged while in the toy though.", 
+"My son, who is always trying to figure out how things work, loves this toy.  He is 12 mos but he is a regular Houdini.  While this may not have helped my cause, he likes to latch and unlatch each set of barn doors and find who's inside.  Much more interesting than a lift-the-flap book and sturdier if your kid is hard on toys.  Nice wood construction with very sturdy latches (I worried they would be flimsy metal snap apart).  No sharp points and very well secured.  It is a little heavy."]
+print("Recensione: ", recensione)
+listVect = vect.transform(recensione)
+
+predict = nb.predict(listVect)
+print("Punteggio previsto: ", predict)
+
+
+#%%
+#Trying predict the train set: it should predict perfectly the overall score!
+#But...no. The naive bayes method has construct only an estimator f_ of the unkown function f that describe
+#the real relationship between feature and target
+predict1 = nb.predict(X_train_dtm)
+eval_predictions(y_train, predict1)
+
 #%%

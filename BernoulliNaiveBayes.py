@@ -15,6 +15,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 #Read entire dataset in a panda DataFrame
 dataset = pd.read_json('./Dataset/Toys_and_Games_5.json',lines=True)
 dataset
+
+#%%
 #Let’s take a look at the distribution of scores across reviews
 dataset['overall'].value_counts().plot(kind='bar', color='cornflowerblue')
 
@@ -23,7 +25,7 @@ dataset['overall'].value_counts().plot(kind='bar', color='cornflowerblue')
 X_train, X_test, y_train, y_test = train_test_split(dataset['reviewText'],
                                                    dataset['overall'],
                                                    test_size=0.2, random_state=1)
-X_train
+
 #%%
 #Feature extraction:
 #represent each review as a feature vectore for BERNOULLI NAIVE BAYES MODEL
@@ -73,6 +75,6 @@ for x in X_test[y_test < y_pred][:2]:
 print('False negatives:')
 print()
 for x in X_test[y_test > y_pred][:2]:
-    print(x[:500])
+    print(x)
     print()
 #%%
