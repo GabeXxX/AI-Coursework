@@ -15,7 +15,7 @@ def wm2df(wordMatrix, featureNames):
 
 #Plot learning curves of a machine learning alghoritm
 def plotLearningCurve(estimator, title, X, y, ylim=None, cv=None,
-                        n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5)):
+                        n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5), scoring = 'accuracy',):
     """
     Generate a simple plot of the test and training learning curve.
 
@@ -73,12 +73,12 @@ def plotLearningCurve(estimator, title, X, y, ylim=None, cv=None,
     plt.title(title)
     if ylim is not None:
         plt.ylim(*ylim)
-    plt.xlabel("Training examples")
-    plt.ylabel("Score")
+    plt.xlabel("Train set size")
+    plt.ylabel("Accuracy")
 
     #generate evaluation curve
     train_sizes, train_scores, test_scores = learning_curve(
-        estimator, X, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes)
+        estimator, X, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes, scoring=scoring)
     
     #calculate mean value for plotting
     train_scores_mean = np.mean(train_scores, axis=1)

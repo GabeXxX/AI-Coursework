@@ -1,13 +1,22 @@
 #%%
 import pandas as pd
+import numpy as np
 import re
 import nltk
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.naive_bayes import BernoulliNB
+from sklearn.naive_bayes import MultinomialNB
 
+from sklearn.model_selection import train_test_split
 from nltk.corpus import stopwords
 from wordcloud import WordCloud, STOPWORDS
 from scipy import stats
+from sklearn.feature_extraction.text import CountVectorizer
+
+from tools import wm2df
+from tools import plotLearningCurve
+from tools import evalPredictions
 
 #%%
 #Load dataset in a panda DataFrame
@@ -57,6 +66,7 @@ stems = [snow.stem(w) for w in word]
 print(stems)
 
 #%%
+"""
 #Apply data cleaning and text preprocessing to all dataset
 def cleaning(rawReview):
     #1. Remove non-letters
@@ -82,7 +92,7 @@ dataset.head()
 
 #Save processed data set in order to retrieve it
 dataset.to_pickle("./Dataset/processedDataSet.pkl")
-
+"""
 #%%
 #Retrieve precedent saved dataset
 dataset = pd.read_pickle("./Dataset/processedDataSet.pkl")
@@ -113,6 +123,8 @@ dataset["uniqueWordFrequency"] = dataset["cleanReview"].apply(lambda x: len(set(
 dataset["wordFrequencySummary"] = dataset["cleanSummary"].apply(lambda x: len(str(x).split()))
 dataset["uniqueWordFrequencySummary"] = dataset["cleanSummary"].apply(lambda x: len(set(str(x).split())))
 
+dataset.to_pickle("./Dataset/processedDataSet.pkl")
+
 fig, axes = plt.subplots(ncols=2)
 fig.set_size_inches(10,5)
 
@@ -132,6 +144,100 @@ axes[1].axvline(dataset["uniqueWordFrequency"].median(), linestyle='dashed')
 print("median of uniuqe word frequency: ", dataset["uniqueWordFrequency"].median())
 
 #%%
+dataset['overall'].value_counts().plot(kind='bar', color='cornflowerblue')
 dataset.iloc[:2]
+
+#%%
+#Create validation and training set
+xTrain, xTest, yTrain, yTest = train_test_split(dataset["cleanReview"],
+                                                 dataset["overall"],
+                                                  test_size=0.2, 
+                                                   random_state=1)
+
+#%%
+#Build vectorizer
+vect = []
+vect.append(CountVectorizer(binary = True))
+vect.append(CountVectorizer())
+vect.append(CountVectorizer())
+vect.append(CountVectorizer(binary = True))
+vect.append(CountVectorizer())
+
+#%%
+#Create bag of words representation for bernoulli model
+xTrainBern = vect[0].fit_transform(xTrain) #Learn the vocabulary dictionary and return term-document matrix.
+xTestBern = vect[0].transform(xTest) #Transform documents to document-term matrix. We only call transform not fit_transform due to the risk of overfitting.
+
+#Create bag of words representation for binomial model
+xTrainBin = vect[1].fit_transform(xTrain)
+xTestBin = vect[1].transform(xTest)
+
+#Convert in bag of words representation the entire dataset
+XBern = vect[2].fit_transform(dataset["reviewText"])
+XBin = vect[3].fit_transform(dataset["reviewText"])
+y = dataset["overall"]
+
+#%%
+#Shed some light on the bag of words representation returned from the CountVectorizer class
+  
+#set of documents
+documents = ['The quick brown fox.','The the Jumps over the lazy dog!']
+#instantiate the vectorizer object
+cvec = CountVectorizer(lowercase=False)
+#convert the documents into a document-term matrix
+wordMatrix = cvec.fit_transform(documents)
+#retrieve the terms found in the corpora
+featureNames = cvec.get_feature_names()
+#create a dataframe from the matrix
+wm2df(wordMatrix, featureNames)
+
+#%%
+#Build models
+models = []
+models.append(BernoulliNB())
+models.append(MultinomialNB())
+models.append(BernoulliNB())
+models.append(MultinomialNB())
+
+#%%
+#Train models
+models[0].fit(xTrainBern, yTrain)
+models[1].fit(xTrainBin, yTrain)
+models[2].fit(XBern, dataset["overall"])
+models[3].fit(XBin, dataset["overall"])
+
+#%%
+#Make class predictions
+yPredBern = models[0].predict(xTestBern)
+yPredBin = models[1].predict(xTestBin)
+
+#%%
+#Calculate accuracy, precision, recall, and F-measure of class predictions
+print("Prestazioni di Bernoulli: ", "\n")
+print("Numero di parole nel train set:", len(vect[0].get_feature_names()), "\n")
+evalPredictions(yTest, yPredBern)
+print( "\nPrestazioni di Binomiale: ", "\n")
+print("Numero di parole nel train set:", len(vect[1].get_feature_names()), "\n")
+evalPredictions(yTest, yPredBin)
+
+#%%Learning Curve
+
+plotLearningCurve(estimator = models[2], 
+                   title="Learning Curves (Bernoulli Naive Bayes)", 
+                    X=XBern, 
+                     y = y, 
+                      ylim=(0.0, 1.0), 
+                       cv=5,
+                        n_jobs= -1, 
+                         train_sizes=[1, 100, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000])
+plotLearningCurve(estimator = models[3],
+                   title= "Learning Curves (Binomial Naive Bayes)", 
+                    X = XBin,
+                     y = y, 
+                      ylim=(0.0, 1.0), 
+                       cv=5,
+                        n_jobs= -1, 
+                         train_sizes=[1, 100, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000])
+
 
 #%%

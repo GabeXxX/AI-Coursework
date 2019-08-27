@@ -1,6 +1,6 @@
-##########################################
-# BERNOULLI AND MULTINOMIAL NAIVE BAYESS #
-##########################################
+#########################################
+# BERNOULLI AND MULTINOMIAL NAIVE BAYES #
+#########################################
 #%%
 import pandas as pd
 import numpy as np
@@ -43,6 +43,8 @@ xTrain, xTest, yTrain, yTest = train_test_split(dataset['reviewText'],
 models = []
 models.append(BernoulliNB())
 models.append(MultinomialNB())
+models.append(BernoulliNB())
+models.append(MultinomialNB())
 
 
 #Extract feature from dataset:
@@ -62,6 +64,8 @@ models.append(MultinomialNB())
 vect = []
 vect.append(CountVectorizer(binary = True))
 vect.append(CountVectorizer())
+vect.append(CountVectorizer(binary = True))
+vect.append(CountVectorizer())
 
 #%%
 #Create bag of words representation for bernoulli model
@@ -72,7 +76,10 @@ xTestBern = vect[0].transform(xTest) #Transform documents to document-term matri
 xTrainBin = vect[1].fit_transform(xTrain)
 xTestBin = vect[1].transform(xTest)
 
-print("Numero di parole nel train set:", len(vect[0].get_feature_names()))
+#Convert in bag of words representation the entire dataset
+XBern = vect[2].fit_transform(dataset["reviewText"])
+XBin = vect[3].fit_transform(dataset["reviewText"])
+y = dataset["overall"]
 
 #%%
 #Shed some light on the bag of words representation returned from the CountVectorizer class
@@ -92,6 +99,8 @@ wm2df(wordMatrix, featureNames)
 #Train models
 models[0].fit(xTrainBern, yTrain)
 models[1].fit(xTrainBin, yTrain)
+models[2].fit(XBern, dataset["overall"])
+models[3].fit(XBin, dataset["overall"])
 
 #%%
 #Make class predictions
@@ -100,9 +109,11 @@ yPredBin = models[1].predict(xTestBin)
 
 #%%
 #Calculate accuracy, precision, recall, and F-measure of class predictions
-print("Prestazioni di Bernoulli: ")
+print("Prestazioni di Bernoulli: ", "\n")
+print("Numero di parole nel train set:", len(vect[0].get_feature_names()), "\n")
 evalPredictions(yTest, yPredBern)
-print( "\nPrestazioni di Binomiale: ")
+print( "\nPrestazioni di Binomiale: ", "\n")
+print("Numero di parole nel train set:", len(vect[1].get_feature_names()), "\n")
 evalPredictions(yTest, yPredBin)
 
 #%%
@@ -121,20 +132,17 @@ for x in xTest[yTest > yPredBern][:2]:
 #%%
 #Generate learning curve
 
-#Convert in bag of words representation the entire dataset
-XBern = vect[0].fit_transform(dataset["reviewText"])
-y = dataset["overall"]
-
 #generate learning curve for bernoulli model
-trainSizes, trainScores, validationScores = learning_curve(estimator = models[0], 
+trainSizes, trainScores, validationScores = learning_curve(estimator = models[2], 
                                                             X = XBern,
                                                              y = y, 
-                                                              train_sizes = np.linspace(.1, 1.0, 10), 
+                                                              train_sizes=[1, 100, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000], 
                                                                cv = 5,
                                                                 scoring = 'accuracy',
                                                                  n_jobs=-1)
 
 #Print scores
+print("Numero di parole nel train set:", len(vect[2].get_feature_names()), "\n")
 print('Training scores:\n\n', trainScores)
 print('\nValidation scores:\n\n', validationScores)
 
@@ -161,26 +169,21 @@ plt.ylim(0,1)
 #%%
 #Use a more compact function for plotting learning curve of both model
 
-#Convert in bag of words representation the entire dataset
-XBern = vect[0].fit_transform(dataset["reviewText"])
-XBin = vect[1].fit_transform(dataset["reviewText"])
-y = dataset["overall"]
-
-plotLearningCurve(estimator = models[0], 
+plotLearningCurve(estimator = models[2], 
                    title="Learning Curves (Bernoulli Naive Bayes)", 
                     X=XBern, 
                      y = y, 
                       ylim=(0.0, 1.0), 
                        cv=5,
                         n_jobs= -1, 
-                         train_sizes=np.linspace(0.1,1.0,20))
-plotLearningCurve(estimator = models[1],
+                          train_sizes=[1, 100, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000])
+plotLearningCurve(estimator = models[3],
                    title= "Learning Curves (Binomial Naive Bayes)", 
                     X = XBin,
                      y = y, 
                       ylim=(0.0, 1.0), 
                        cv=5,
                         n_jobs= -1, 
-                         train_sizes=np.linspace(0.1,1.0,20))
+                          train_sizes=[1, 100, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000])
 
 #%%
