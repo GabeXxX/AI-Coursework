@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import learning_curve
 from sklearn import metrics
 
+from wordcloud import WordCloud, STOPWORDS
+
 #Create a dataframe from a word matrix return by CountVectorizer
 def wm2df(wordMatrix, featureNames):   
     # create an index for each row
@@ -112,3 +114,29 @@ def evalPredictions(ytest, ypred):
     print('precision:', metrics.precision_score(ytest, ypred, average='weighted'))
     print('recall:', metrics.recall_score(ytest, ypred, average='weighted'))
     print('F-measure:', metrics.f1_score(ytest, ypred, average='weighted'))
+
+#WorldCloud
+def cloud(data,backgroundcolor = 'white', width = 800, height = 600):
+    wordcloud = WordCloud(stopwords = STOPWORDS, background_color = backgroundcolor,
+                         width = width, height = height).generate(data)
+    plt.figure(figsize = (15, 10))
+    plt.imshow(wordcloud)
+    plt.axis("off")
+    plt.show()
+
+#Apply data cleaning and text preprocessing to all dataset
+def cleaning(rawReview):
+    #1. Remove non-letters
+    letters = re.sub("[^a-zA-Z]", " ", rawReview)   
+    #2. Convert to lower case
+    letters = letters.lower()   
+    #3. Tokenize
+    tokens = nltk.word_tokenize(letters)   
+    #4. Convert the stopwords list to "set" data type
+    stops = set(nltk.corpus.stopwords.words("english"))   
+    #5. Remove stop words
+    words = [w for w in tokens if not w in stops]  
+    #6. Stemming
+    words = [nltk.stem.SnowballStemmer("english").stem(w) for w in words]  
+    #7. Join the words back into one string separated by space, and return the result.
+    return " ".join(words)

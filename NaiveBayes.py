@@ -43,8 +43,7 @@ xTrain, xTest, yTrain, yTest = train_test_split(dataset['reviewText'],
 models = []
 models.append(BernoulliNB())
 models.append(MultinomialNB())
-models.append(BernoulliNB())
-models.append(MultinomialNB())
+
 
 
 #Extract feature from dataset:
@@ -99,8 +98,7 @@ wm2df(wordMatrix, featureNames)
 #Train models
 models[0].fit(xTrainBern, yTrain)
 models[1].fit(xTrainBin, yTrain)
-models[2].fit(XBern, dataset["overall"])
-models[3].fit(XBin, dataset["overall"])
+
 
 #%%
 #Make class predictions
@@ -133,7 +131,7 @@ for x in xTest[yTest > yPredBern][:2]:
 #Generate learning curve
 
 #generate learning curve for bernoulli model
-trainSizes, trainScores, validationScores = learning_curve(estimator = models[2], 
+trainSizes, trainScores, validationScores = learning_curve(estimator = models[0], 
                                                             X = XBern,
                                                              y = y, 
                                                               train_sizes=[1, 100, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000], 
@@ -169,7 +167,7 @@ plt.ylim(0,1)
 #%%
 #Use a more compact function for plotting learning curve of both model
 
-plotLearningCurve(estimator = models[2], 
+plotLearningCurve(estimator = models[0], 
                    title="Learning Curves (Bernoulli Naive Bayes)", 
                     X=XBern, 
                      y = y, 
@@ -177,7 +175,7 @@ plotLearningCurve(estimator = models[2],
                        cv=5,
                         n_jobs= -1, 
                           train_sizes=[1, 100, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000])
-plotLearningCurve(estimator = models[3],
+plotLearningCurve(estimator = models[1],
                    title= "Learning Curves (Binomial Naive Bayes)", 
                     X = XBin,
                      y = y, 

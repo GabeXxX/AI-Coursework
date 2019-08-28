@@ -5,18 +5,22 @@ import re
 import nltk
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 from sklearn.naive_bayes import BernoulliNB
 from sklearn.naive_bayes import MultinomialNB
-
 from sklearn.model_selection import train_test_split
 from nltk.corpus import stopwords
-from wordcloud import WordCloud, STOPWORDS
-from scipy import stats
 from sklearn.feature_extraction.text import CountVectorizer
+
+from wordcloud import WordCloud, STOPWORDS
+
+from scipy import stats
 
 from tools import wm2df
 from tools import plotLearningCurve
 from tools import evalPredictions
+from tools import cloud
+from tools import cleaning
 
 #%%
 #Load dataset in a panda DataFrame
@@ -68,22 +72,6 @@ print(stems)
 #%%
 """
 #Apply data cleaning and text preprocessing to all dataset
-def cleaning(rawReview):
-    #1. Remove non-letters
-    letters = re.sub("[^a-zA-Z]", " ", rawReview)   
-    #2. Convert to lower case
-    letters = letters.lower()   
-    #3. Tokenize
-    tokens = nltk.word_tokenize(letters)   
-    #4. Convert the stopwords list to "set" data type
-    stops = set(nltk.corpus.stopwords.words("english"))   
-    #5. Remove stop words
-    words = [w for w in tokens if not w in stops]  
-    #6. Stemming
-    words = [nltk.stem.SnowballStemmer("english").stem(w) for w in words]  
-    #7. Join the words back into one string separated by space, and return the result.
-    return " ".join(words)
-
 #Add the processed data to the original data. 
 #Using apply() function is more elegant and concise than using for loop
 dataset["cleanReview"] = dataset["reviewText"].apply(cleaning)
@@ -102,14 +90,6 @@ dataset.head()
 #Visualization
 
 #WordCloud
-def cloud(data,backgroundcolor = 'white', width = 800, height = 600):
-    wordcloud = WordCloud(stopwords = STOPWORDS, background_color = backgroundcolor,
-                         width = width, height = height).generate(data)
-    plt.figure(figsize = (15, 10))
-    plt.imshow(wordcloud)
-    plt.axis("off")
-    plt.show()
-
 cloud(' '.join(dataset["cleanReview"]))
 cloud(' '.join(dataset["cleanSummary"]))
 
@@ -159,7 +139,6 @@ xTrain, xTest, yTrain, yTest = train_test_split(dataset["cleanReview"],
 vect = []
 vect.append(CountVectorizer(binary = True))
 vect.append(CountVectorizer())
-vect.append(CountVectorizer())
 vect.append(CountVectorizer(binary = True))
 vect.append(CountVectorizer())
 
@@ -173,8 +152,8 @@ xTrainBin = vect[1].fit_transform(xTrain)
 xTestBin = vect[1].transform(xTest)
 
 #Convert in bag of words representation the entire dataset
-XBern = vect[2].fit_transform(dataset["reviewText"])
-XBin = vect[3].fit_transform(dataset["reviewText"])
+XBern = vect[2].fit_transform(dataset["cleanReview"])
+XBin = vect[3].fit_transform(dataset["cleanReview"])
 y = dataset["overall"]
 
 #%%
@@ -196,15 +175,13 @@ wm2df(wordMatrix, featureNames)
 models = []
 models.append(BernoulliNB())
 models.append(MultinomialNB())
-models.append(BernoulliNB())
-models.append(MultinomialNB())
+
 
 #%%
 #Train models
 models[0].fit(xTrainBern, yTrain)
 models[1].fit(xTrainBin, yTrain)
-models[2].fit(XBern, dataset["overall"])
-models[3].fit(XBin, dataset["overall"])
+
 
 #%%
 #Make class predictions
@@ -222,7 +199,7 @@ evalPredictions(yTest, yPredBin)
 
 #%%Learning Curve
 
-plotLearningCurve(estimator = models[2], 
+plotLearningCurve(estimator = models[0], 
                    title="Learning Curves (Bernoulli Naive Bayes)", 
                     X=XBern, 
                      y = y, 
@@ -230,7 +207,7 @@ plotLearningCurve(estimator = models[2],
                        cv=5,
                         n_jobs= -1, 
                          train_sizes=[1, 100, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000])
-plotLearningCurve(estimator = models[3],
+plotLearningCurve(estimator = models[1],
                    title= "Learning Curves (Binomial Naive Bayes)", 
                     X = XBin,
                      y = y, 
