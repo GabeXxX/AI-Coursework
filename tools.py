@@ -1,6 +1,9 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import re
+import nltk
+from nltk.corpus import stopwords
 
 from sklearn.model_selection import learning_curve
 from sklearn import metrics

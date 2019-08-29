@@ -70,7 +70,7 @@ stems = [snow.stem(w) for w in word]
 print(stems)
 
 #%%
-"""
+
 #Apply data cleaning and text preprocessing to all dataset
 #Add the processed data to the original data. 
 #Using apply() function is more elegant and concise than using for loop
@@ -80,7 +80,7 @@ dataset.head()
 
 #Save processed data set in order to retrieve it
 dataset.to_pickle("./Dataset/processedDataSet.pkl")
-"""
+
 #%%
 #Retrieve precedent saved dataset
 dataset = pd.read_pickle("./Dataset/processedDataSet.pkl")
@@ -97,31 +97,13 @@ cloud(' '.join(dataset["cleanSummary"]))
 #Distribution
 # We need to split each words in cleaned review and then count the number of each rows of data frame.
 
-dataset["wordFrequency"] = dataset["cleanReview"].apply(lambda x: len(str(x).split())) #Split() a string into a list where each word is a list item
-dataset["uniqueWordFrequency"] = dataset["cleanReview"].apply(lambda x: len(set(str(x).split())))
+dataset["reviewLenght"] = dataset["cleanReview"].apply(lambda x: len(str(x).split())) #Split() a string into a list where each word is a list item
+dataset["summaryLenght"] = dataset["cleanSummary"].apply(lambda x: len(str(x).split()))
 
-dataset["wordFrequencySummary"] = dataset["cleanSummary"].apply(lambda x: len(str(x).split()))
-dataset["uniqueWordFrequencySummary"] = dataset["cleanSummary"].apply(lambda x: len(set(str(x).split())))
+sns.kdeplot(dataset["reviewLenght"], shade=True)
 
-dataset.to_pickle("./Dataset/processedDataSet.pkl")
+print("median of review lenght: ", dataset["reviewLenght"].median())
 
-fig, axes = plt.subplots(ncols=2)
-fig.set_size_inches(10,5)
-
-sns.distplot(dataset["wordFrequency"], bins = 90, ax=axes[0], fit = stats.norm)
-(mu0, sigma0) = stats.norm.fit(dataset["wordFrequency"])
-axes[0].legend(['Normal dist. ($\mu=$ {:.2f} and $\sigma=$ {:.2f} )'.format(mu0, sigma0)],loc='best')
-axes[0].set_title("Distribution Word Frequency")
-axes[0].axvline(dataset["wordFrequency"].median(), linestyle='dashed')
-
-print("median of word frequency: ", dataset["wordFrequency"].median())
-
-sns.distplot(dataset["uniqueWordFrequency"], bins = 90, ax=axes[1], color = 'r', fit = stats.norm)
-(mu1, sigma1) = stats.norm.fit(dataset["uniqueWordFrequency"])
-axes[1].set_title("Distribution Unique Word Frequency")
-axes[1].legend(['Normal dist. ($\mu=$ {:.2f} and $\sigma=$ {:.2f} )'.format(mu1, sigma1)],loc='best')
-axes[1].axvline(dataset["uniqueWordFrequency"].median(), linestyle='dashed')
-print("median of uniuqe word frequency: ", dataset["uniqueWordFrequency"].median())
 
 #%%
 dataset['overall'].value_counts().plot(kind='bar', color='cornflowerblue')
@@ -216,5 +198,17 @@ plotLearningCurve(estimator = models[1],
                         n_jobs= -1, 
                          train_sizes=[1, 100, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000])
 
+
+#%%
+
+#%%
+#Distribution
+# We need to split each words in cleaned review and then count the number of each rows of data frame.
+dataset["reviewLenght"] = dataset["cleanReview"].apply(lambda x: len(str(x).split())) #Split() a string into a list where each word is a list item
+dataset["summaryLenght"] = dataset["cleanSummary"].apply(lambda x: len(str(x).split()))
+
+sns.distplot(dataset["reviewLenght"], kde=False)
+
+print("Median of review lenght: ", dataset["reviewLenght"].median())
 
 #%%

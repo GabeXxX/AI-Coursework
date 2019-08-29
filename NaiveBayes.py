@@ -185,3 +185,15 @@ plotLearningCurve(estimator = models[1],
                           train_sizes=[1, 100, 500, 1000, 5000, 10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000])
 
 #%%
+def sentiment(x):
+  if x == 2:
+    return np.nan
+  if x<2:
+    return 0
+  if x>2:
+    return 1
+  
+
+dataset["sentiment"] = dataset["overall"].apply(sentiment)
+
+#%%
