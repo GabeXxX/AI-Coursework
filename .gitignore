@@ -2,3 +2,4 @@
 Dataset
 ws.code-workspace
 __pycache__
+.ipynb_checkpoints
