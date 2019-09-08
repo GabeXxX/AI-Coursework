@@ -34,3 +34,5 @@ A more compact version was also made available including only the python code us
 
 Finally, a pdf conversion of the project is also available.
 This may not be visually satisfying but it is useful if you have problems viewing the Jupiter notebook version.
+
+The report summerize and analyze the result of the tests performed.
