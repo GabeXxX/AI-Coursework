@@ -32,7 +32,4 @@ The complete project is included in the Jupiter Notebook NaiveBayesProject.ipynb
 
 A more compact version was also made available including only the python code used in the project, which however does not include any explanation about the code and which may be more difficult to read without first reading the previous file.
 
-Finally, a pdf conversion of the project is also available.
-This may not be visually satisfying but it is useful if you have problems viewing the Jupiter notebook version.
-
 The report summerize and analyze the result of the tests performed.
